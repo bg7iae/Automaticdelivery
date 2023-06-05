@@ -1,0 +1,42 @@
+name: Trigger auto deployment for freedocker1
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/freedocker1-AutoDeployTrigger-f924a39e-0422-4b13-9d9e-56cd1ebbf770.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.FREEDOCKER1_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: freemachinelearningcontainer.azurecr.io
+          registryUsername: ${{ secrets.FREEDOCKER1_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.FREEDOCKER1_REGISTRY_PASSWORD }}
+          containerAppName: freedocker1
+          resourceGroup: FreeDocker1
+          imageToBuild: freemachinelearningcontainer.azurecr.io/freedocker1:${{ github.sha }}
+          
+
+     
+
